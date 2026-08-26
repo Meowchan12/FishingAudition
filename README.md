@@ -6,7 +6,7 @@
 
 ![Java](https://img.shields.io/badge/Java-21+-orange?style=for-the-badge&logo=java)
 ![PaperMC](https://img.shields.io/badge/PaperMC-1.21+-blue?style=for-the-badge&logo=papermc)
-![Folia](https://img.shields.io/badge/Folia-26.2_Ready-success?style=for-the-badge)
+![Folia](https://img.shields.io/badge/Folia-26.2-success?style=for-the-badge)
 ![Economy](https://img.shields.io/badge/Economy-Vault_|_VaultX-yellow?style=for-the-badge)
 
 </div>
