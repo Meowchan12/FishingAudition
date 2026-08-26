@@ -1,0 +1,178 @@
+# ========================================== #
+#           FISHING AUDITION CONFIG          #
+# ========================================== #
+
+database:
+  type: "sqlite" # "mysql" or "sqlite"
+  host: "localhost"
+  port: 3306
+  database_name: "fishing_audition"
+  username: "root"
+  password: "password"
+  pool_size: 10
+  
+# Ty gia quy doi FishCoin sang tien te khac
+exchange:
+  tiers:
+    tier-1:
+      id: "vault"
+      material: "GOLD_INGOT"
+      name: "&6&lExchange to Vault Money"
+      lore:
+        - "&7Rate: &e1 FishCoin = %rate% %currency%"
+        - "&a[Left-Click] &7Exchange %cost% FishCoins for %reward% %currency%"
+        - "&b[Right-Click] &7Custom Amount / All"
+      slot: 11
+      custom_model_data: 0
+      currency_type: "VAULT"
+      cost-fishcoins: 100
+      reward-amount: 1000
+    tier-2:
+      id: "playerpoints"
+      material: "DIAMOND"
+      name: "&b&lExchange to PlayerPoints"
+      lore:
+        - "&7Rate: &e1 FishCoin = %rate% %currency%"
+        - "&a[Left-Click] &7Exchange %cost% FishCoins for %reward% %currency%"
+        - "&b[Right-Click] &7Custom Amount / All"
+      slot: 15
+      custom_model_data: 0
+      currency_type: "PLAYERPOINTS"
+      cost-fishcoins: 100
+      reward-amount: 100
+
+# Toa do khu vuc cau ca (Se duoc tu dong cap nhat khi dung lenh /fish setregion)
+# region:
+#   world: "world"
+#   pos1:
+#     x: 0.0
+#     y: 0.0
+#     z: 0.0
+#   pos2:
+#     x: 0.0
+#     y: 0.0
+#     z: 0.0
+
+# Toa do join/leave (Se duoc tu dong cap nhat khi dung lenh /fish setjoin va /fish setleave)
+# region:
+#   join_location:
+#     world: "world"
+#     x: 0.0
+#     y: 0.0
+#     z: 0.0
+#     yaw: 0.0
+#     pitch: 0.0
+#   leave_location:
+#     world: "world"
+#     x: 0.0
+#     y: 0.0
+#     z: 0.0
+#     yaw: 0.0
+#     pitch: 0.0
+
+settings:
+  repair_cost_per_point: 5.0
+
+rng:
+  rates:
+    legendary: 1.0
+    epic: 5.0
+    rare: 15.0
+    uncommon: 40.0
+
+level-system:
+  base-xp: 100
+  multiplier: 1.5
+
+events:
+  weekend-xp:
+    enabled: true
+    multiplier: 2.0
+    active-days:
+      - SATURDAY
+      - SUNDAY
+    start-time: "00:00"
+    end-time: "23:59"
+    messages:
+      on-join: "&e&l🌟 WEEKEND EVENT IS ACTIVE! &fEnjoy &a{multiplier}x XP &f!"
+
+leveling:
+  xp_gain:
+    COMMON: 10.0
+    UNCOMMON: 25.0
+    RARE: 50.0
+    EPIC: 100.0
+    LEGENDARY: 500.0
+
+gameplay:
+  drain-per-second: 0.02 # Rút 2% BossBar mỗi giây
+  penalty-progress-loss: 0.3 # Trừ 30% khi bấm sai
+  correct-progress-gain: 0.2 # Cộng 20% khi bấm đúng
+  levels:
+    level-0:
+      start-progress: 0.5
+      time-min: 2.0
+      time-max: 2.5
+    level-1:
+      start-progress: 0.4
+      time-min: 1.5
+      time-max: 1.5
+
+gui:
+  titles:
+    chest: "&8Your Virtual Fish Chest"
+    logbook: "&8Fish Logbook"
+    exchange: "&8Currency Exchange"
+    rod_shop: "&8Fishing Rod Shop"
+    preview: "&8Fish Preview"
+  sizes:
+    chest: 54
+    logbook: 54
+    exchange: 27
+    rod_shop: 54
+    preview: 54
+
+items:
+  sell_all:
+    material: EMERALD
+    name: "&a&lSELL ALL FISH"
+    lore:
+      - "&7Click here to sell all fish"
+      - "&7stored in this virtual chest."
+    custom_model_data: 0
+  close_button:
+    material: BARRIER
+    name: "&c&lClose"
+    lore: []
+    custom_model_data: 0
+  filler:
+    enabled: true
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+    custom_model_data: 0
+
+sounds:
+  win_round:
+    sound: ENTITY_PLAYER_LEVELUP
+    volume: 1.0
+    pitch: 1.5
+  lose_round:
+    sound: ENTITY_ITEM_BREAK
+    volume: 1.0
+    pitch: 0.5
+  correct_key:
+    sound: ENTITY_EXPERIENCE_ORB_PICKUP
+    volume: 1.0
+    pitch: 2.0
+  wrong_key:
+    sound: ENTITY_ITEM_BREAK
+    volume: 1.0
+    pitch: 0.5
+  rod_break:
+    sound: ENTITY_ITEM_BREAK
+    volume: 1.0
+    pitch: 1.0
+  purchase:
+    sound: ENTITY_EXPERIENCE_ORB_PICKUP
+    volume: 1.0
+    pitch: 1.0

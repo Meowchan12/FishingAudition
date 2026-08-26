@@ -1,0 +1,70 @@
+rods:
+  starter_rod:
+    name: "&a&lStarter Fishing Rod"
+    max_durability: 250
+    rarity_boost: 0.0
+    price: 0.0
+    repair_multiplier: 1.0
+    custom_model_data: 1001
+    catchable-rarities:
+      - "COMMON"
+      - "UNCOMMON"
+    extra-time: 1.0
+    progress-boost: 1.2
+    lore:
+      - "&7A basic rod for beginners."
+      - "&7Good for catching common fish."
+
+  iron_rod:
+    name: "&f&lIron Fishing Rod"
+    max_durability: 100
+    rarity_boost: 5.0
+    price: 5000.0
+    repair_multiplier: 5.0
+    custom_model_data: 1002
+    catchable-rarities:
+      - "COMMON"
+      - "UNCOMMON"
+      - "RARE"
+    extra-time: 0.5
+    progress-boost: 1.5
+    lore:
+      - "&7Sturdy and reliable."
+      - "&7Slightly increases rare fish chances."
+
+  gold_rod:
+    name: "&6&lGolden Fishing Rod"
+    max_durability: 200
+    rarity_boost: 15.0
+    price: 50000.0
+    repair_multiplier: 25.0
+    custom_model_data: 1003
+    catchable-rarities:
+      - "COMMON"
+      - "UNCOMMON"
+      - "RARE"
+      - "EPIC"
+    extra-time: 0.0
+    progress-boost: 2.0
+    lore:
+      - "&7Shiny and magical."
+      - "&7Greatly boosts rare fish chances."
+
+  diamond_rod:
+    name: "&b&lDiamond Fishing Rod"
+    max_durability: 500
+    rarity_boost: 30.0
+    price: 200000.0
+    repair_multiplier: 100.0
+    custom_model_data: 1004
+    catchable-rarities:
+      - "COMMON"
+      - "UNCOMMON"
+      - "RARE"
+      - "EPIC"
+      - "LEGENDARY"
+    extra-time: 0.0
+    progress-boost: 3.0
+    lore:
+      - "&7The ultimate fishing tool."
+      - "&7Legends say it catches sea monsters."

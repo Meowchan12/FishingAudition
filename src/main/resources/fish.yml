@@ -1,0 +1,114 @@
+fishes:
+  # === COMMON TIER (2 - 5 FishCoins) ===
+  # Low value, meant for starters to grind for their first repairs
+  common_carp:
+    name: "Common Carp"
+    tier: "COMMON"
+    value: 2.0
+    custom_model_data: 1001
+  mud_loach:
+    name: "Mud Loach"
+    tier: "COMMON"
+    value: 3.0
+    custom_model_data: 1002
+  river_chub:
+    name: "River Chub"
+    tier: "COMMON"
+    value: 4.0
+    custom_model_data: 1003
+  minnow:
+    name: "Minnow"
+    tier: "COMMON"
+    value: 2.5
+    custom_model_data: 1004
+  tilapia:
+    name: "Tilapia"
+    tier: "COMMON"
+    value: 5.0
+    custom_model_data: 1005
+
+  # === UNCOMMON TIER (15 - 30 FishCoins) ===
+  # Moderate value, standard income for iron rod users
+  uncommon_salmon:
+    name: "Uncommon Salmon"
+    tier: "UNCOMMON"
+    value: 15.0
+    custom_model_data: 2001
+  striped_bass:
+    name: "Striped Bass"
+    tier: "UNCOMMON"
+    value: 20.0
+    custom_model_data: 2002
+  rainbow_trout:
+    name: "Rainbow Trout"
+    tier: "UNCOMMON"
+    value: 25.0
+    custom_model_data: 2003
+  catfish:
+    name: "Whiskered Catfish"
+    tier: "UNCOMMON"
+    value: 22.0
+    custom_model_data: 2004
+  pike:
+    name: "Northern Pike"
+    tier: "UNCOMMON"
+    value: 30.0
+    custom_model_data: 2005
+
+  # === RARE TIER (100 - 250 FishCoins) ===
+  # High value, starts generating real profit
+  rare_tuna:
+    name: "Rare Bluefin Tuna"
+    tier: "RARE"
+    value: 100.0
+    custom_model_data: 3001
+  coral_grouper:
+    name: "Coral Grouper"
+    tier: "RARE"
+    value: 150.0
+    custom_model_data: 3002
+  ghost_koi:
+    name: "Ghost Koi"
+    tier: "RARE"
+    value: 200.0
+    custom_model_data: 3003
+  mahi_mahi:
+    name: "Mahi Mahi"
+    tier: "RARE"
+    value: 250.0
+    custom_model_data: 3004
+
+  # === EPIC TIER (400 - 800 FishCoins) ===
+  epic_swordfish:
+    name: "Epic Swordfish"
+    tier: "EPIC"
+    value: 400.0
+    custom_model_data: 4001
+  abyssal_anglerfish:
+    name: "Abyssal Anglerfish"
+    tier: "EPIC"
+    value: 600.0
+    custom_model_data: 4002
+  goliath_tigerfish:
+    name: "Goliath Tigerfish"
+    tier: "EPIC"
+    value: 800.0
+    custom_model_data: 4003
+
+  # === LEGENDARY TIER (1000 - 2500 FishCoins) ===
+  # Jackpot! Huge payout but very rare without a good rod.
+  legendary_koi:
+    name: "Legendary Golden Koi"
+    tier: "LEGENDARY"
+    value: 1000.0
+    custom_model_data: 5001
+  dragon_arowana:
+    name: "Dragon Arowana"
+    tier: "LEGENDARY"
+    value: 1800.0
+    custom_model_data: 5002
+  leviathan_scale:
+    name: "Leviathan Scale Fish"
+    tier: "LEGENDARY"
+    value: 2500.0
+    custom_model_data: 5003

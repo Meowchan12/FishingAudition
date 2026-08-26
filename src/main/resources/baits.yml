@@ -1,0 +1,37 @@
+baits:
+  worm:
+    name: "&aEarthworm"
+    rarity_boost: 5.0
+    max_charges: 50
+    custom_model_data: 1
+    miss-penalty-reduction: 0.0
+    target-rarity: ""
+    price: 1500.0
+    slot: 12
+  premium_bait:
+    name: "&6Premium Bait"
+    rarity_boost: 15.0
+    max_charges: 20
+    custom_model_data: 2
+    miss-penalty-reduction: 0.0
+    target-rarity: ""
+    price: 4500.0
+    slot: 13
+  sticky_bait:
+    name: "&dSticky Bait"
+    rarity_boost: 0.0
+    max_charges: 30
+    custom_model_data: 3
+    miss-penalty-reduction: 0.5
+    target-rarity: ""
+    price: 3000.0
+    slot: 14
+  targeted_bait:
+    name: "&bTargeted Bait"
+    rarity_boost: 0.0
+    max_charges: 10
+    custom_model_data: 4
+    miss-penalty-reduction: 0.0
+    target-rarity: "LEGENDARY"
+    price: 10000.0
+    slot: 15

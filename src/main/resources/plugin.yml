@@ -1,0 +1,21 @@
+name: FishingAudition
+version: "4.1.0"
+main: com.meowchan12.fishingaudition.Main
+api-version: '1.21'
+depend: [PlaceholderAPI]
+softdepend: [Vault, PlayerPoints]
+authors: [Meowchan12]
+description: Advanced audition-style fishing minigame.
+
+commands:
+  fish:
+    description: Main command for FishingAudition
+    aliases: [fa]
+
+permissions:
+  fishingaudition.user.*:
+    description: Grants all user permissions
+    default: true
+  fishingaudition.admin.*:
+    description: Grants all admin permissions
+    default: op
