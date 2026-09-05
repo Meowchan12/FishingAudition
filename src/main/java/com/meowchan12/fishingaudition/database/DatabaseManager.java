@@ -9,6 +9,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.UUID;
 
 public class DatabaseManager {
 
@@ -78,6 +79,9 @@ public class DatabaseManager {
             try {
                 stmt.executeUpdate("ALTER TABLE fishing_users ADD COLUMN bait_charges INT");
             } catch (SQLException ignored) {}
+            try {
+                stmt.executeUpdate("ALTER TABLE fishing_users ADD COLUMN pre_join_location VARCHAR(255)");
+            } catch (SQLException ignored) {}
 
             // Chest Table (item_data is Base64 LONGTEXT)
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS fishing_chest (" +
@@ -96,8 +100,84 @@ public class DatabaseManager {
         }
     }
 
+    // ======== PRE-JOIN LOCATION PERSISTENCE ========
+
+    public void savePreJoinLocation(UUID uuid, org.bukkit.Location loc) {
+        if (loc == null || loc.getWorld() == null) return;
+        String serialized = loc.getWorld().getName() + ";" + loc.getX() + ";" + loc.getY() + ";" + loc.getZ() + ";" + loc.getYaw() + ";" + loc.getPitch();
+        
+        com.meowchan12.fishingaudition.utils.SchedulerUtils.runAsync(plugin, () -> {
+            String sql = type.equals("mysql")
+                ? "UPDATE fishing_users SET pre_join_location = ? WHERE uuid = ?"
+                : "UPDATE fishing_users SET pre_join_location = ? WHERE uuid = ?";
+            try (Connection conn = getConnection();
+                 java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, serialized);
+                ps.setString(2, uuid.toString());
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to save pre_join_location for " + uuid + ": " + e.getMessage());
+            }
+        });
+    }
+
+    public org.bukkit.Location getPreJoinLocation(UUID uuid) {
+        String sql = "SELECT pre_join_location FROM fishing_users WHERE uuid = ?";
+        try (Connection conn = getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String loc = rs.getString("pre_join_location");
+                    return deserializeLocation(loc);
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to get pre_join_location for " + uuid + ": " + e.getMessage());
+        }
+        return null;
+    }
+
+    public void clearPreJoinLocation(UUID uuid) {
+        com.meowchan12.fishingaudition.utils.SchedulerUtils.runAsync(plugin, () -> {
+            String sql = "UPDATE fishing_users SET pre_join_location = NULL WHERE uuid = ?";
+            try (Connection conn = getConnection();
+                 java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, uuid.toString());
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to clear pre_join_location for " + uuid + ": " + e.getMessage());
+            }
+        });
+    }
+
+    private org.bukkit.Location deserializeLocation(String str) {
+        if (str == null || str.isEmpty()) return null;
+        try {
+            String[] parts = str.split(";");
+            if (parts.length < 6) return null;
+            org.bukkit.World world = org.bukkit.Bukkit.getWorld(parts[0]);
+            if (world == null) return null;
+            double x = Double.parseDouble(parts[1]);
+            double y = Double.parseDouble(parts[2]);
+            double z = Double.parseDouble(parts[3]);
+            float yaw = Float.parseFloat(parts[4]);
+            float pitch = Float.parseFloat(parts[5]);
+            return new org.bukkit.Location(world, x, y, z, yaw, pitch);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to deserialize location: " + str);
+            return null;
+        }
+    }
+
+    // ======== CORE ACCESS ========
+
     public Connection getConnection() throws SQLException {
         return dataSource.getConnection();
+    }
+
+    public HikariDataSource getDataSource() {
+        return dataSource;
     }
 
     public void close() {

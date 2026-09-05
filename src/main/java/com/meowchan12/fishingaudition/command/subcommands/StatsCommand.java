@@ -24,7 +24,7 @@ public class StatsCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.user.stats";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_STATS;
     }
 
     @Override

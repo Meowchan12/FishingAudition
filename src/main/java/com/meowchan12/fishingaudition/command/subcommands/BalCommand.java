@@ -25,7 +25,7 @@ public class BalCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.user.bal";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_BAL;
     }
 
     @Override

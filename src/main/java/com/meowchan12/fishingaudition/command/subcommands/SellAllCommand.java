@@ -26,7 +26,7 @@ public class SellAllCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.user.sellall";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_SELLALL;
     }
 
     @Override

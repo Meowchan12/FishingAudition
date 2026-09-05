@@ -32,7 +32,7 @@ public class MenuCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.menu";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_MENU;
     }
 
     @Override

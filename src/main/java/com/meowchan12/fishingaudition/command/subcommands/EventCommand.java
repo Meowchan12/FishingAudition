@@ -24,7 +24,7 @@ public class EventCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.event";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_EVENT;
     }
 
     @Override

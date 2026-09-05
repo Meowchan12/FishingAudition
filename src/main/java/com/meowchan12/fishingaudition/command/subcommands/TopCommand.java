@@ -27,7 +27,7 @@ public class TopCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.user.top";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_TOP;
     }
 
     @Override

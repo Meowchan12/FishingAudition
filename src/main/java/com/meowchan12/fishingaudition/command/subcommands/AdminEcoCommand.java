@@ -18,7 +18,7 @@ public class AdminEcoCommand extends SubCommand {
     public String getSyntax() { return "/fish eco <give/take/set> <player> <amount>"; }
 
     @Override
-    public String getPermission() { return "fishingaudition.admin.eco"; }
+    public String getPermission() { return com.meowchan12.fishingaudition.constants.Permissions.ADMIN_ECO; }
 
     @Override
     public void perform(Player player, String[] args) {

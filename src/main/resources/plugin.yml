@@ -1,5 +1,5 @@
 name: FishingAudition
-version: "4.1.0"
+version: "4.2.0"
 main: com.meowchan12.fishingaudition.Main
 api-version: '1.21'
 depend: [PlaceholderAPI]
@@ -11,6 +11,8 @@ commands:
   fish:
     description: Main command for FishingAudition
     aliases: [fa]
+    permission: fishingaudition.user.menu
+    permission-message: "&cYou don't have permission to do this!"
 
 permissions:
   fishingaudition.user.*:
@@ -18,4 +20,54 @@ permissions:
     default: true
   fishingaudition.admin.*:
     description: Grants all admin permissions
+    default: op
+
+  fishingaudition.user.bal:
+    default: true
+  fishingaudition.user.ballook:
+    default: true
+  fishingaudition.user.chest:
+    default: true
+  fishingaudition.user.event:
+    default: true
+  fishingaudition.user.join:
+    default: true
+  fishingaudition.user.leave:
+    default: true
+  fishingaudition.user.logbook:
+    default: true
+  fishingaudition.user.menu:
+    default: true
+  fishingaudition.user.pay:
+    default: true
+  fishingaudition.user.preview:
+    default: true
+  fishingaudition.user.profile:
+    default: true
+  fishingaudition.user.repair:
+    default: true
+  fishingaudition.user.sellall:
+    default: true
+  fishingaudition.user.shop:
+    default: true
+  fishingaudition.user.stats:
+    default: true
+  fishingaudition.user.top:
+    default: true
+
+  fishingaudition.admin.eco:
+    default: op
+  fishingaudition.admin.event:
+    default: op
+  fishingaudition.admin.kick:
+    default: op
+  fishingaudition.admin.xp:
+    default: op
+  fishingaudition.admin.setup:
+    default: op
+  fishingaudition.admin.reload:
+    default: op
+  fishingaudition.admin.debug:
+    default: op
+  fishingaudition.admin:
     default: op

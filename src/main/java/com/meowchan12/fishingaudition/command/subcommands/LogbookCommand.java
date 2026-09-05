@@ -23,7 +23,7 @@ public class LogbookCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.user.logbook";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_LOGBOOK;
     }
 
     @Override

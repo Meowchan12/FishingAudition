@@ -115,35 +115,42 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Phase 1: Force all arena players out safely
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.getOpenInventory() != null) {
                 player.closeInventory();
             }
             
             // CRITICAL SHUTDOWN: Force leave if active
-            if (inventoryManager != null && inventoryManager.hasBackup(player)) {
-                com.meowchan12.fishingaudition.command.CommandManager.processLeave(player, true);
+            if (playerDataManager != null && playerDataManager.isInArena(player)) {
+                com.meowchan12.fishingaudition.command.CommandManager.leaveArena(player, "SHUTDOWN", true);
             }
         }
 
+        // Phase 2: End all remaining QTE sessions
         if (sessionManager != null) {
             sessionManager.endAllSessions();
         }
 
+        // Phase 3: Cleanup scoreboards
         if (scoreboardManager != null) {
             scoreboardManager.cleanup();
         }
 
+        // Phase 4: Flush ALL player data synchronously (including dirty profiles)
         if (playerDataManager != null) {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 playerDataManager.saveData(player, false); // false = SYNC
             }
+            getLogger().info("All player data flushed synchronously.");
         }
         
+        // Phase 5: Flush chests
         if (chestManager != null) {
-            chestManager.saveAllChests(); // saveAllChests now uses sweepFishToChestSync
+            chestManager.saveAllChests();
         }
         
+        // Phase 6: Close database connection pool LAST
         if (databaseManager != null) {
             databaseManager.close();
         }

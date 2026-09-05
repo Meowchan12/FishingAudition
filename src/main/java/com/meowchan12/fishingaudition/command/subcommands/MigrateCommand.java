@@ -33,7 +33,7 @@ public class MigrateCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.admin";
+        return com.meowchan12.fishingaudition.constants.Permissions.ADMIN_GENERAL;
     }
 
     @Override

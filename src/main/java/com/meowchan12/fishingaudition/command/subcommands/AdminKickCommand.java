@@ -18,10 +18,15 @@ public class AdminKickCommand extends SubCommand {
     public String getSyntax() { return "/fish kick <player>"; }
 
     @Override
-    public String getPermission() { return "fishingaudition.admin.kick"; }
+    public String getPermission() { return com.meowchan12.fishingaudition.constants.Permissions.ADMIN_KICK; }
 
     @Override
     public void perform(Player admin, String[] args) {
+        performConsole(admin, args);
+    }
+
+    @Override
+    public void performConsole(org.bukkit.command.CommandSender admin, String[] args) {
         if (args.length < 2) {
             admin.sendMessage(MessageUtils.colorize("&cUsage: " + getSyntax()));
             return;
@@ -34,10 +39,12 @@ public class AdminKickCommand extends SubCommand {
             return;
         }
 
-        // Ép chạy lệnh Leave
-        target.performCommand("fish leave");
+        if (Main.getInstance().getPlayerDataManager() == null || !Main.getInstance().getPlayerDataManager().isInArena(target)) {
+            admin.sendMessage(MessageUtils.colorize("&cPlayer " + target.getName() + " is not in the fishing area."));
+            return;
+        }
 
+        com.meowchan12.fishingaudition.command.CommandManager.leaveArena(target, "KICKED", false);
         admin.sendMessage(MessageUtils.colorize("&aSuccessfully forced &f" + target.getName() + " &ato leave the fishing area."));
-        target.sendMessage(MessageUtils.colorize("&cYou were kicked from the fishing area by an Admin!"));
     }
 }

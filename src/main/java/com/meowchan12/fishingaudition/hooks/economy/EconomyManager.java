@@ -74,6 +74,15 @@ public class EconomyManager {
     }
 
     /**
+     * Returns a human-readable name of the active provider for debug display.
+     */
+    public String getProviderName() {
+        if (provider == null) return "None";
+        if (provider instanceof VaultXHook) return "VaultX Async (Connected)";
+        return "Vault Legacy (Connected)";
+    }
+
+    /**
      * Checks if the Economy provider is a VaultX implementation
      * by testing for VaultAsyncEconomy or MultiCurrencyEconomy interfaces.
      */

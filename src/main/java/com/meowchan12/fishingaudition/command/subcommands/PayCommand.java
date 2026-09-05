@@ -26,7 +26,7 @@ public class PayCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.user.pay";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_PAY;
     }
 
     @Override

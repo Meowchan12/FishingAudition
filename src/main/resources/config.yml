@@ -10,8 +10,7 @@ database:
   username: "root"
   password: "password"
   pool_size: 10
-  
-# Ty gia quy doi FishCoin sang tien te khac
+
 exchange:
   tiers:
     tier-1:

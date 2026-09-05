@@ -24,7 +24,7 @@ public class ProfileCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.profile";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_PROFILE;
     }
 
     @Override

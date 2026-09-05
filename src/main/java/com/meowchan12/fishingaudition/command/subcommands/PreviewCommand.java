@@ -34,7 +34,7 @@ public class PreviewCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.user.preview";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_PREVIEW;
     }
 
     @Override

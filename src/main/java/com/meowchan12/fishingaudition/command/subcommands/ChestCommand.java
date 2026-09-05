@@ -22,7 +22,7 @@ public class ChestCommand extends SubCommand {
     public String getSyntax() { return "/fish chest"; }
 
     @Override
-    public String getPermission() { return "fishingaudition.user.chest"; }
+    public String getPermission() { return com.meowchan12.fishingaudition.constants.Permissions.USER_CHEST; }
 
     @Override
     public void perform(Player player, String[] args) {

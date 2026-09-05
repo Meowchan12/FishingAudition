@@ -18,7 +18,7 @@ public class SetJoinCommand extends SubCommand {
     public String getSyntax() { return "/fish setjoin"; }
 
     @Override
-    public String getPermission() { return "fishingaudition.admin.setup"; }
+    public String getPermission() { return com.meowchan12.fishingaudition.constants.Permissions.ADMIN_SETUP; }
 
     @Override
     public void perform(Player player, String[] args) {

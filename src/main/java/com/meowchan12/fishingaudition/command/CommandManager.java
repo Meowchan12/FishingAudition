@@ -46,73 +46,91 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         subCommands.add(new ProfileCommand());
         subCommands.add(new EventCommand());
         subCommands.add(new AdminEventCommand());
+        subCommands.add(new DebugCommand());
     }
 
-    public static void processLeave(Player player, boolean sync) {
+    public static final java.util.Set<java.util.UUID> leavingPlayers = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    public static void leaveArena(Player player, String reason, boolean sync) {
         Main plugin = Main.getInstance();
         if (plugin == null) return;
-        
-        // 1. Remove from active sessions
-        if (plugin.getSessionManager() != null && plugin.getSessionManager().isPlaying(player)) {
-            com.meowchan12.fishingaudition.mechanics.AuditionSession session = plugin.getSessionManager().getSession(player);
-            if (session != null) session.endSession(false);
-            plugin.getSessionManager().removeSession(player);
+
+        if (plugin.getPlayerDataManager() == null || !plugin.getPlayerDataManager().isInArena(player)) {
+            player.sendMessage(MessageUtils.colorize("&cYou are not in the fishing area!"));
+            return;
         }
-        
-        // 2 & 3. Virtual items -> Chest -> Auto-sell
-        if (plugin.getChestManager() != null) {
-            if (sync) {
-                plugin.getChestManager().sweepFishToChestSync(player);
-            } else {
-                plugin.getChestManager().sweepFishToChest(player);
+
+        if (!leavingPlayers.add(player.getUniqueId())) {
+            player.sendMessage(MessageUtils.colorize("&cPlease wait, you are already leaving the area..."));
+            return;
+        }
+
+        try {
+            // 1. Remove from active sessions (QTE)
+            if (plugin.getSessionManager() != null && plugin.getSessionManager().isPlaying(player)) {
+                com.meowchan12.fishingaudition.mechanics.AuditionSession session = plugin.getSessionManager().getSession(player);
+                if (session != null) session.endSession(false);
+                plugin.getSessionManager().removeSession(player);
             }
-        }
-        
-        // Clear virtual inventory
-        player.getInventory().clear();
-        
-        // 4. Restore original inventory
-        if (plugin.getInventoryManager() != null && plugin.getInventoryManager().hasBackup(player)) {
-            if (sync) {
-                plugin.getInventoryManager().restoreInventorySync(player);
-            } else {
-                plugin.getInventoryManager().restoreInventory(player);
+            
+            // 2 & 3. Virtual items -> Chest -> Auto-sell
+            if (plugin.getChestManager() != null) {
+                if (sync) {
+                    plugin.getChestManager().sweepFishToChestSync(player);
+                } else {
+                    plugin.getChestManager().sweepFishToChest(player);
+                }
             }
-        }
-        
-        // 5. Restore Main Scoreboard
-        if (plugin.getScoreboardManager() != null) {
-            plugin.getScoreboardManager().removeBoard(player);
-        }
-        
-        // 6. Safe Teleport
-        if (plugin.getPlayerDataManager() != null) {
-            org.bukkit.Location preLoc = plugin.getPlayerDataManager().getPreJoinLocation(player);
-            if (preLoc != null) {
-                player.teleport(preLoc);
-                plugin.getPlayerDataManager().removePreJoinLocation(player);
-            } else if (plugin.getRegionManager() != null && plugin.getRegionManager().getLeaveLocation() != null) {
-                player.teleport(plugin.getRegionManager().getLeaveLocation());
+            
+            // Clear virtual inventory
+            player.getInventory().clear();
+            
+            // 4. Restore original inventory (Atomic)
+            if (plugin.getInventoryManager() != null && plugin.getInventoryManager().hasBackup(player)) {
+                if (sync) {
+                    plugin.getInventoryManager().restoreInventorySync(player);
+                } else {
+                    plugin.getInventoryManager().restoreInventory(player);
+                }
             }
+            
+            // 5. Restore Main Scoreboard & Arena State
+            if (plugin.getScoreboardManager() != null) {
+                plugin.getScoreboardManager().removeBoard(player);
+            }
+            plugin.getPlayerDataManager().removePlayerFromArena(player);
+            
+            // 6. Safe Teleport
+            if (plugin.getPlayerDataManager() != null) {
+                org.bukkit.Location preLoc = plugin.getPlayerDataManager().getPreJoinLocation(player);
+                if (preLoc != null) {
+                    player.teleport(preLoc);
+                    plugin.getPlayerDataManager().removePreJoinLocation(player);
+                } else if (plugin.getRegionManager() != null && plugin.getRegionManager().getLeaveLocation() != null) {
+                    player.teleport(plugin.getRegionManager().getLeaveLocation());
+                }
+            }
+
+            if ("KICKED".equals(reason)) {
+                player.sendMessage(MessageUtils.colorize("&cYou were kicked from the fishing area!"));
+            } else if ("SELF".equals(reason)) {
+                player.sendMessage(MessageUtils.colorize("&aYou have left the fishing area."));
+            }
+        } finally {
+            leavingPlayers.remove(player.getUniqueId());
         }
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("Only players can use this command.");
-            return true;
-        }
-
-        Player player = (Player) sender;
 
         if (args.length > 0 && !args[0].equalsIgnoreCase("help")) {
             for (SubCommand subCommand : subCommands) {
                 if (args[0].equalsIgnoreCase(subCommand.getName())) {
-                    if (player.hasPermission(subCommand.getPermission())) {
-                        subCommand.perform(player, args);
+                    if (sender.hasPermission(subCommand.getPermission())) {
+                        subCommand.performConsole(sender, args);
                     } else {
-                        player.sendMessage(MessageUtils.colorize("&cYou do not have permission to use this command."));
+                        sender.sendMessage(MessageUtils.colorize("&cYou do not have permission to use this command."));
                     }
                     return true;
                 }
@@ -135,7 +153,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
         List<SubCommand> permittedCommands = new ArrayList<>();
         for (SubCommand subCommand : subCommands) {
-            if (player.hasPermission(subCommand.getPermission())) {
+            if (sender.hasPermission(subCommand.getPermission())) {
                 permittedCommands.add(subCommand);
             }
         }
@@ -145,18 +163,18 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         if (page < 1) page = 1;
         if (page > maxPages) page = maxPages;
 
-        player.sendMessage(MessageUtils.colorize("<#3498db>&l=== FishingAudition Help (" + page + "/" + maxPages + ") ==="));
+        sender.sendMessage(MessageUtils.colorize("<#3498db>&l=== FishingAudition Help (" + page + "/" + maxPages + ") ==="));
         
         int startIndex = (page - 1) * maxCommandsPerPage;
         int endIndex = Math.min(startIndex + maxCommandsPerPage, permittedCommands.size());
 
         for (int i = startIndex; i < endIndex; i++) {
             SubCommand subCommand = permittedCommands.get(i);
-            player.sendMessage(MessageUtils.colorize("&e" + subCommand.getSyntax() + " &8- &7" + subCommand.getDescription()));
+            sender.sendMessage(MessageUtils.colorize("&e" + subCommand.getSyntax() + " &8- &7" + subCommand.getDescription()));
         }
         
         if (page < maxPages) {
-            player.sendMessage(MessageUtils.colorize("&aType &e/fish help " + (page + 1) + " &ato see the next page."));
+            sender.sendMessage(MessageUtils.colorize("&aType &e/fish help " + (page + 1) + " &ato see the next page."));
         }
 
         return true;

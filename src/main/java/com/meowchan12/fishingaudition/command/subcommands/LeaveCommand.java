@@ -32,7 +32,7 @@ public class LeaveCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.user.leave";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_LEAVE;
     }
 
     @Override
@@ -43,7 +43,6 @@ public class LeaveCommand extends SubCommand {
             return;
         }
 
-        player.sendMessage(MessageUtils.colorize("&eLeaving fishing area..."));
-        com.meowchan12.fishingaudition.command.CommandManager.processLeave(player, false);
+        com.meowchan12.fishingaudition.command.CommandManager.leaveArena(player, "SELF", false);
     }
 }

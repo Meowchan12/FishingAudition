@@ -31,7 +31,7 @@ public class ShopCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.user.shop";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_SHOP;
     }
 
     @Override

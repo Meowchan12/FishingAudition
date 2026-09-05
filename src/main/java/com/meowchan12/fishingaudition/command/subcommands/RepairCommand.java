@@ -32,7 +32,7 @@ public class RepairCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.repair";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_REPAIR;
     }
 
     @Override

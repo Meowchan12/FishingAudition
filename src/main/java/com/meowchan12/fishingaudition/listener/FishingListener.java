@@ -136,15 +136,9 @@ public class FishingListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        if (sessionManager.getActiveSessionsCount() > 0 && sessionManager.isPlaying(player)) {
-            AuditionSession session = sessionManager.getSession(player);
-            if (session != null) {
-                session.endSession(false);
-            }
-            sessionManager.removeSession(player);
+        if (plugin.getPlayerDataManager().isInArena(player)) {
+            com.meowchan12.fishingaudition.command.CommandManager.leaveArena(player, "QUIT", true);
         }
-
-        plugin.getChestManager().sweepFishToChest(player);
     }
 
     // --- Anti-Exploit Measures ---

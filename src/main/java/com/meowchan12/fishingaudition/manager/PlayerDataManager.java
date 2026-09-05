@@ -2,14 +2,11 @@ package com.meowchan12.fishingaudition.manager;
 
 import com.meowchan12.fishingaudition.Main;
 import com.meowchan12.fishingaudition.currencymanager.FishCoinManager;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.Player;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class PlayerDataManager {
@@ -21,10 +18,84 @@ public class PlayerDataManager {
     private final Map<UUID, String> equippedRods = new ConcurrentHashMap<>();
     private final Map<UUID, String> equippedBaits = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> baitCharges = new ConcurrentHashMap<>();
+    
+    // Arena State Tracking
+    private final Set<UUID> playersInArena = ConcurrentHashMap.newKeySet();
+    
+    // Pre-join location cache (RAM + DB persistent)
+    private final Map<UUID, org.bukkit.Location> preJoinLocations = new ConcurrentHashMap<>();
+    
+    // Dirty-Checking: tracks which profiles need DB flush
+    private final Set<UUID> dirtyProfiles = ConcurrentHashMap.newKeySet();
 
     public PlayerDataManager(Main plugin) {
         this.plugin = plugin;
     }
+
+    // ======== ARENA STATE ========
+
+    public boolean isInArena(Player player) {
+        return playersInArena.contains(player.getUniqueId());
+    }
+
+    public void addPlayerToArena(Player player) {
+        playersInArena.add(player.getUniqueId());
+    }
+
+    public void removePlayerFromArena(Player player) {
+        playersInArena.remove(player.getUniqueId());
+    }
+
+    public int getArenaPlayerCount() {
+        return playersInArena.size();
+    }
+
+    public Set<UUID> getPlayersInArena() {
+        return java.util.Collections.unmodifiableSet(playersInArena);
+    }
+
+    // ======== DIRTY-CHECKING ========
+
+    public void markDirty(Player player) {
+        dirtyProfiles.add(player.getUniqueId());
+    }
+
+    public void markDirty(UUID uuid) {
+        dirtyProfiles.add(uuid);
+    }
+
+    public boolean isDirty(UUID uuid) {
+        return dirtyProfiles.contains(uuid);
+    }
+
+    public int getDirtyCount() {
+        return dirtyProfiles.size();
+    }
+
+    public int getCachedProfileCount() {
+        return topRounds.size();
+    }
+
+    // ======== PRE-JOIN LOCATION (RAM + DB) ========
+
+    public void setPreJoinLocation(Player player, org.bukkit.Location loc) {
+        if (loc != null) {
+            preJoinLocations.put(player.getUniqueId(), loc.clone());
+            // Persist to DB immediately for crash recovery
+            plugin.getDatabaseManager().savePreJoinLocation(player.getUniqueId(), loc);
+        }
+    }
+
+    public org.bukkit.Location getPreJoinLocation(Player player) {
+        return preJoinLocations.get(player.getUniqueId());
+    }
+
+    public void removePreJoinLocation(Player player) {
+        preJoinLocations.remove(player.getUniqueId());
+        plugin.getDatabaseManager().clearPreJoinLocation(player.getUniqueId());
+    }
+
+    // ======== DATA LOAD ========
 
     public void loadData(Player player) {
         UUID uuid = player.getUniqueId();
@@ -50,6 +121,12 @@ public class PlayerDataManager {
                             charges = rs.getInt("bait_charges");
                         } catch (java.sql.SQLException ignored) {}
                         
+                        // Check for stuck pre_join_location (crash recovery)
+                        String preJoinLoc = null;
+                        try {
+                            preJoinLoc = rs.getString("pre_join_location");
+                        } catch (java.sql.SQLException ignored) {}
+                        
                         java.util.List<String> rodsList = new java.util.ArrayList<>();
                         if (ownedRodsStr != null && !ownedRodsStr.isEmpty()) {
                             rodsList.addAll(java.util.Arrays.asList(ownedRodsStr.split(",")));
@@ -64,6 +141,7 @@ public class PlayerDataManager {
                         final String finalEquipped = equippedRod;
                         final String finalBait = equippedBait;
                         final int finalCharges = charges;
+                        final String finalPreJoinLoc = preJoinLoc;
                         
                         // Apply back to main thread or safely set in concurrent structures
                         com.meowchan12.fishingaudition.utils.SchedulerUtils.runAtEntity(plugin, player, () -> {
@@ -76,6 +154,11 @@ public class PlayerDataManager {
                             if (finalBait != null && !finalBait.isEmpty()) {
                                 equippedBaits.put(uuid, finalBait);
                                 baitCharges.put(uuid, finalCharges);
+                            }
+                            
+                            // Crash Recovery: If pre_join_location exists in DB, player was stuck
+                            if (finalPreJoinLoc != null && !finalPreJoinLoc.isEmpty()) {
+                                handleStuckPlayer(player, finalPreJoinLoc);
                             }
                         });
                     } else {
@@ -95,6 +178,49 @@ public class PlayerDataManager {
             }
         });
     }
+
+    /**
+     * Module 1 Crash Recovery: Handles players who were stuck in the arena after a crash/restart.
+     * Uses 3-tier fallback for safe teleportation destination.
+     */
+    private void handleStuckPlayer(Player player, String serializedLoc) {
+        // Tier 1: Try the saved pre_join_location
+        org.bukkit.Location safeLoc = null;
+        if (serializedLoc != null && !serializedLoc.isEmpty()) {
+            safeLoc = plugin.getDatabaseManager().getPreJoinLocation(player.getUniqueId());
+        }
+        
+        // Tier 2: Leave location from config
+        if (safeLoc == null && plugin.getRegionManager() != null) {
+            safeLoc = plugin.getRegionManager().getLeaveLocation();
+        }
+        
+        // Tier 3: Default world spawn
+        if (safeLoc == null && !org.bukkit.Bukkit.getWorlds().isEmpty()) {
+            safeLoc = org.bukkit.Bukkit.getWorlds().get(0).getSpawnLocation();
+        }
+        
+        if (safeLoc != null) {
+            final org.bukkit.Location dest = safeLoc;
+            // Delay 2 ticks for safe chunk loading
+            com.meowchan12.fishingaudition.utils.SchedulerUtils.runTaskLaterAtEntity(plugin, player, () -> {
+                if (player.isOnline()) {
+                    player.teleport(dest);
+                    // Restore inventory if backup exists
+                    if (plugin.getInventoryManager() != null && plugin.getInventoryManager().hasBackup(player)) {
+                        plugin.getInventoryManager().restoreInventorySync(player);
+                    }
+                    player.sendMessage(com.meowchan12.fishingaudition.utils.MessageUtils.colorize(
+                        "&a[FishingAudition] You were returned to your previous location."));
+                }
+            }, 2L);
+        }
+        
+        // Clear the stale DB record
+        plugin.getDatabaseManager().clearPreJoinLocation(player.getUniqueId());
+    }
+
+    // ======== DATA SAVE ========
 
     public void saveData(Player player, boolean async) {
         UUID uuid = player.getUniqueId();
@@ -146,6 +272,7 @@ public class PlayerDataManager {
                 }
                 
                 ps.executeUpdate();
+                dirtyProfiles.remove(uuid); // Clear dirty flag after successful save
             } catch (java.sql.SQLException e) {
                 plugin.getLogger().severe("Failed to save player data for " + playerName + ": " + e.getMessage());
             }
@@ -162,6 +289,7 @@ public class PlayerDataManager {
         int currentTop = topRounds.getOrDefault(player.getUniqueId(), 0);
         if (round > currentTop) {
             topRounds.put(player.getUniqueId(), round);
+            markDirty(player);
         }
     }
 
@@ -176,6 +304,7 @@ public class PlayerDataManager {
 
     public void addOwnedRod(Player player, String rodId) {
         ownedRods.computeIfAbsent(player.getUniqueId(), k -> new java.util.ArrayList<>()).add(rodId);
+        markDirty(player);
     }
 
     public String getEquippedRod(Player player) {
@@ -184,6 +313,7 @@ public class PlayerDataManager {
 
     public void setEquippedRod(Player player, String rodId) {
         equippedRods.put(player.getUniqueId(), rodId);
+        markDirty(player);
     }
 
     public void saveAllData() {
@@ -192,16 +322,24 @@ public class PlayerDataManager {
         }
     }
 
+    /**
+     * Module 3: Auto-save only dirty profiles every 5 minutes (6000 ticks).
+     */
     public void startAutoSaveTask() {
         com.meowchan12.fishingaudition.utils.SchedulerUtils.runTimerAsync(plugin, () -> {
-            // Must be run synchronously if calling saveAllData() that accesses Bukkit APIs like getOnlinePlayers()
             com.meowchan12.fishingaudition.utils.SchedulerUtils.runTask(plugin, () -> {
+                int savedCount = 0;
                 for (Player player : org.bukkit.Bukkit.getOnlinePlayers()) {
-                    saveData(player, true);
+                    if (dirtyProfiles.contains(player.getUniqueId())) {
+                        saveData(player, true);
+                        savedCount++;
+                    }
                 }
-                plugin.getLogger().info("Auto-saved all player data (Async DB).");
+                if (savedCount > 0) {
+                    plugin.getLogger().info("Auto-saved " + savedCount + " dirty player profiles (Async DB).");
+                }
             });
-        }, 18000L, 18000L);
+        }, 6000L, 6000L); // Every 5 minutes
     }
 
     public double getOfflineBalance(String playerName) {
@@ -223,22 +361,8 @@ public class PlayerDataManager {
     public void unloadData(Player player) {
         topRounds.remove(player.getUniqueId());
         preJoinLocations.remove(player.getUniqueId());
-    }
-
-    private final Map<UUID, org.bukkit.Location> preJoinLocations = new ConcurrentHashMap<>();
-
-    public void setPreJoinLocation(Player player, org.bukkit.Location loc) {
-        if (loc != null) {
-            preJoinLocations.put(player.getUniqueId(), loc.clone());
-        }
-    }
-
-    public org.bukkit.Location getPreJoinLocation(Player player) {
-        return preJoinLocations.get(player.getUniqueId());
-    }
-
-    public void removePreJoinLocation(Player player) {
-        preJoinLocations.remove(player.getUniqueId());
+        playersInArena.remove(player.getUniqueId());
+        dirtyProfiles.remove(player.getUniqueId());
     }
 
     public String getEquippedBait(Player player) {
@@ -248,6 +372,7 @@ public class PlayerDataManager {
     public void setEquippedBait(Player player, String baitId, int charges) {
         equippedBaits.put(player.getUniqueId(), baitId);
         baitCharges.put(player.getUniqueId(), charges);
+        markDirty(player);
     }
 
     public int getBaitCharges(Player player) {
@@ -256,10 +381,12 @@ public class PlayerDataManager {
 
     public void setBaitCharges(Player player, int charges) {
         baitCharges.put(player.getUniqueId(), charges);
+        markDirty(player);
     }
 
     public void removeBait(Player player) {
         equippedBaits.remove(player.getUniqueId());
         baitCharges.remove(player.getUniqueId());
+        markDirty(player);
     }
 }

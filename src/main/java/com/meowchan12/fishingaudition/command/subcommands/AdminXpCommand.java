@@ -25,7 +25,7 @@ public class AdminXpCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.admin.xp";
+        return com.meowchan12.fishingaudition.constants.Permissions.ADMIN_XP;
     }
 
     @Override

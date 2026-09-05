@@ -32,7 +32,7 @@ public class JoinCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fishingaudition.user.join";
+        return com.meowchan12.fishingaudition.constants.Permissions.USER_JOIN;
     }
 
     @Override
@@ -44,12 +44,14 @@ public class JoinCommand extends SubCommand {
         }
 
         // Check if player is already in a session or region
-        if (inventoryManager.hasBackup(player)) {
+        if (Main.getInstance().getPlayerDataManager().isInArena(player)) {
             player.sendMessage(MessageUtils.colorize("&cYou are already in the fishing area!"));
             return;
         }
+        
         // Backup and clear inventory
         inventoryManager.backupAndClear(player);
+        Main.getInstance().getPlayerDataManager().addPlayerToArena(player);
 
         // Give Equipped Rod
         String equippedRodId = Main.getInstance().getPlayerDataManager().getEquippedRod(player);

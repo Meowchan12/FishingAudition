@@ -27,7 +27,7 @@ public class AdminEventCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "fa.admin";
+        return com.meowchan12.fishingaudition.constants.Permissions.ADMIN_EVENT;
     }
 
     @Override
